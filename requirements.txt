@@ -2,4 +2,5 @@ fastapi
 uvicorn
 ytmusicapi
 yt-dlp
-gunicorn
+ffmpeg-python 
+gunicorn 
