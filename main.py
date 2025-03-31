@@ -2,6 +2,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from ytmusicapi import YTMusic
 import yt_dlp
+import asyncio
 
 app = FastAPI()
 
@@ -44,8 +45,8 @@ async def search_songs(q: str):
     return await fetch_songs(q)
 
 # Extract Audio URL using yt-dlp
-def get_audio_url(video_id):
-    """Extracts the direct audio URL from a YouTube video."""
+async def get_audio_url(video_id):
+    """Extracts the direct audio URL from a YouTube video asynchronously."""
     url = f"https://www.youtube.com/watch?v={video_id}"
     ydl_opts = {
         "format": "bestaudio/best",
@@ -54,9 +55,10 @@ def get_audio_url(video_id):
         "force_generic_extractor": False,
     }
 
+    loop = asyncio.get_event_loop()
     with yt_dlp.YoutubeDL(ydl_opts) as ydl:
-        info = ydl.extract_info(url, download=False)
-        return info["url"] if "url" in info else None
+        info = await loop.run_in_executor(None, ydl.extract_info, url, False)
+        return info.get("url") if "url" in info else None
 
 # Get Audio + Metadata API
 @app.get("/get_audio")
@@ -76,7 +78,7 @@ async def get_audio(video_id: str):
     thumbnail = thumbnails[-1]["url"] if thumbnails else None  # Get highest-quality image
 
     # Get direct audio URL
-    audio_url = get_audio_url(video_id)
+    audio_url = await get_audio_url(video_id)
     if not audio_url:
         return {"error": "Audio not found"}
 
