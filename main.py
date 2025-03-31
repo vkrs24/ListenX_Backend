@@ -80,7 +80,7 @@ async def get_audio(video_id: str):
     # Get direct audio URL
     audio_url = await get_audio_url(video_id)
     if not audio_url:
-        return {"error": "Audio not found"}
+        return {"error": "server Error try again later"}
 
     return {
         "audio_url": audio_url,
